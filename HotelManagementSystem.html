@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hotel Management System</title> 
+</head>
+	<body>
+		<h1>Hotel Management System</h1>
+<form>
+			<div id="demo">
+				<label for="name">Customer Name: </label><input type="text" id="name" name="name" required><br><br>	
+				<label for="d1">Check-in date: </label><input type="date" id="d1" required><br><br>
+				<label for="d2">Check-out date: </label><input type="date" id="d2" required><br><br>
+				<label for="room">Room type: </label>
+				<select name="room" id="room" requried>
+				    <option value="Normal">Normal</option>
+				    <option value="Deluxe">Deluxe</option>
+				</select><br><br>
+				<button>Generate Invoice</button>
+				<input type="reset">
+				<br><br>
+				<p id ="invoice"></p>
+				<button id="print" onclick="Popup()" style="visibility:hidden;">Print Invoice</button>
+			</div>
+			</form>
+	</body>
+	
+	<script>	
+	
+	const form  = document.getElementsByTagName('form')[0];		
+	form.addEventListener('submit', function (event) {
+		let name = document.getElementsByTagName("input")[0].value;
+		let checkin = new Date(document.getElementById("d1").value);
+		let checkout = new Date(document.getElementById("d2").value);
+		let roomType = document.getElementById("room").value;
+		let invoiceElement = document.getElementById("invoice");
+		invoiceElement.innerHTML = "";
+		
+		let today = new Date();
+		if (checkout.getTime() > today.getTime(0)) {
+			alert("Checkout date cannot be in future");
+			event.preventDefault();
+			return;
+		}
+		if (checkout.getTime() <= checkin.getTime()) {
+			alert("Checkout date should be later than checkin date");
+			event.preventDefault();
+			return;
+		}
+		
+		var room;
+		if (roomType == "Normal") room = new Normal(name,checkin, checkout);
+		else room = new Deluxe(name,checkin, checkout);
+		let invoice = room.generateInvoice(); 
+		invoiceElement.innerHTML = invoice;
+		document.getElementById('print').style.visibility = 'visible';
+		window.scrollTo(0,document.body.scrollHeight);
+		event.preventDefault(); //prevent page refresh/blank page on form submit
+		});
+	
+	
+	
+	function Room (customerName, checkin, checkout,type,rate) {			
+		this.customerName = customerName;
+		this.checkin = checkin;
+		this.checkout = checkout;
+		this.gst = 12;
+		this.type = type;
+		this.rate = rate;
+	}
+
+	Room.prototype.generateInvoice = function () {
+		let daysInMillis = this.checkout.getTime() - this.checkin.getTime();
+		let millisInDay = 24*60*60*1000; // 24 hours has these many milliseconds
+		let days = daysInMillis/millisInDay;
+		let gst =(this.rate*days*this.gst)/100;
+		var invoice= "<br><h2>Invoice:</h2><br> <b>Customer Name:</b> &emsp;"+this.customerName + "<br><br> <b>Check-in date:</b> &emsp;"+this.checkin + 
+		"<br><br> <b>Check-out date:</b> &emsp;"+this.checkout+ "<br><br> <b>Room Type:</b> &emsp;"+this.type + "<br><br> <b>Rate/day:</b> &emsp;"+ this.rate + 
+		"<br><br> <b>No. of days:</b> &emsp;"+ days + "<br><br> <b>GST@" + this.gst+"%:</b> &emsp;"+ gst + "<br><br> <b>Total payable:</b> &emsp;"+ (this.rate*days + gst);
+		console.log("invoice:"+invoice);;
+		return invoice;
+	}
+
+	
+	
+	class Normal extends Room {		
+		constructor(customerName, checkin, checkout) {
+			super(customerName, checkin, checkout, "Normal", 2000);
+		}
+	}
+		
+	class Deluxe extends Room {		
+		constructor(customerName, checkin, checkout) {
+			super(customerName, checkin, checkout, "Deluxe", 4000);
+		}
+	}
+	
+	
+	function Popup() {
+		   let invoice = document.getElementById("invoice").innerHTML;
+		   var mywindow = window.open('', 'height=400,width=600');
+		   mywindow.document.write('<html><head><title>Print Invoice</title>');
+		   mywindow.document.write("<style>body{font-family:Arial}</style>");
+		   mywindow.document.write('</head><body>');
+		   mywindow.document.write(invoice);
+		   mywindow.document.write('<br><br><button onclick=window.print()>Print</button>');
+		   mywindow.document.write('<button onclick=window.close()>Back</button>');
+		   mywindow.document.write('</body></html>');
+		   return true;
+	}
+	
+	</script>
+</html>
+
+
+
+
+
